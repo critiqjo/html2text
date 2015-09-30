@@ -48,8 +48,6 @@ class HTML2Text(HTMLParser.HTMLParser):
 
         # Config options
         self.split_next_td = False
-        self.td_count = 0
-        self.table_start = False
         self.unicode_snob = config.UNICODE_SNOB  # covered in cli
         self.escape_snob = config.ESCAPE_SNOB  # covered in cli
         self.links_each_paragraph = config.LINKS_EACH_PARAGRAPH
@@ -552,25 +550,14 @@ class HTML2Text(HTMLParser.HTMLParser):
                         self.o('</{0}>'.format(tag))
 
             else:
-                if tag == "table" and start:
-                    self.table_start = True
                 if tag in ["td", "th"] and start:
                     if self.split_next_td:
-                        self.o("| ")
+                        self.o("\t| ")
                     self.split_next_td = True
 
-                if tag == "tr" and start:
-                    self.td_count = 0
                 if tag == "tr" and not start:
                     self.split_next_td = False
                     self.soft_br()
-                if tag == "tr" and not start and self.table_start:
-                    # Underline table header
-                    self.o("|".join(["---"] * self.td_count))
-                    self.soft_br()
-                    self.table_start = False
-                if tag in ["td", "th"] and start:
-                    self.td_count += 1
 
         if tag == "pre":
             if start:
